@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OBRA R-25 — Camiones</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #242424;
+    --border: #2e2e2e; --accent: #f5a623; --green: #22c55e;
+    --red: #ef4444; --text: #f0f0f0; --text2: #888; --text3: #444;
+    --mono: 'DM Mono', monospace; --sans: 'DM Sans', sans-serif; --display: 'Bebas Neue', cursive;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--sans); min-height:100vh; }
+
+  header {
+    background:var(--surface); border-bottom:1px solid var(--border);
+    padding:0 20px; display:flex; align-items:center; justify-content:space-between;
+    height:56px; position:sticky; top:0; z-index:100;
+  }
+  .logo { font-family:var(--display); font-size:20px; letter-spacing:2px; color:var(--accent); }
+  .logo span { color:var(--text2); font-size:11px; font-family:var(--mono); margin-left:10px; }
+  .clock { font-family:var(--mono); font-size:11px; color:var(--text2); text-align:right; line-height:1.6; }
+
+  main { max-width:700px; margin:0 auto; padding:20px 16px; }
+
+  .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
+  .stat { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px; text-align:center; }
+  .stat .n { font-family:var(--display); font-size:32px; color:var(--accent); line-height:1; }
+  .stat .l { font-size:10px; font-family:var(--mono); color:var(--text2); margin-top:3px; letter-spacing:1px; text-transform:uppercase; }
+
+  .form-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px; }
+  .form-title { font-family:var(--display); font-size:18px; letter-spacing:1px; color:var(--accent); margin-bottom:16px; }
+
+  .targa-row { margin-bottom:14px; }
+
+  .section-divider { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+  .section-block { background:var(--surface2); border-radius:10px; padding:14px; }
+  .section-label { font-family:var(--mono); font-size:10px; letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+  .section-label.ent { color:var(--green); }
+  .section-label.sal { color:var(--red); }
+
+  .form-group { margin-bottom:12px; }
+  .form-group:last-child { margin-bottom:0; }
+  label { display:block; font-size:10px; font-family:var(--mono); color:var(--text2); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; }
+
+  input, select {
+    background:var(--bg); border:1px solid var(--border); border-radius:7px;
+    color:var(--text); font-family:var(--mono); font-size:14px;
+    padding:9px 11px; outline:none; transition:border-color 0.2s; width:100%;
+  }
+  input:focus, select:focus { border-color:var(--accent); }
+  input::placeholder { color:var(--text3); }
+  select option { background:var(--surface2); }
+
+  .targa-input { font-size:18px !important; letter-spacing:3px !important; text-align:center; text-transform:uppercase; }
+
+  .bottom-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+  .full { grid-column:1 / -1; }
+
+  .btn-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .btn { padding:12px; border:none; border-radius:8px; font-family:var(--display); font-size:16px; letter-spacing:2px; cursor:pointer; transition:all 0.2s; }
+  .btn-save { background:var(--accent); color:#000; }
+  .btn-save:hover { opacity:0.85; transform:translateY(-1px); }
+  .btn-clear { background:var(--surface2); color:var(--text2); border:1px solid var(--border); }
+  .btn-clear:hover { border-color:var(--text2); color:var(--text); }
+  .btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+
+  .notifica { display:none; padding:10px 14px; border-radius:7px; font-size:12px; font-family:var(--mono); margin-top:12px; }
+  .notifica.ok { background:rgba(34,197,94,0.12); border:1px solid var(--green); color:var(--green); display:block; }
+  .notifica.err { background:rgba(239,68,68,0.12); border:1px solid var(--red); color:var(--red); display:block; }
+
+  .totale-bar { background:var(--surface); border:1px solid rgba(245,166,35,0.3); border-radius:10px; padding:14px 18px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; }
+  .totale-label { font-family:var(--mono); font-size:11px; color:var(--text2); text-transform:uppercase; letter-spacing:1px; }
+  .totale-num { font-family:var(--display); font-size:28px; color:var(--accent); }
+
+  .lista-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .lista-title { font-family:var(--display); font-size:16px; letter-spacing:1px; color:var(--text2); }
+  .refresh-btn { background:none; border:1px solid var(--border); color:var(--text2); padding:5px 10px; border-radius:6px; font-size:11px; font-family:var(--mono); cursor:pointer; transition:all 0.2s; }
+  .refresh-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+  .camion-list { display:flex; flex-direction:column; gap:8px; }
+  .camion-row { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 14px; display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:center; cursor:pointer; transition:border-color 0.2s; }
+  .camion-row:hover { border-color:var(--accent); }
+
+  .targa-badge { background:var(--surface2); border-radius:6px; padding:8px 12px; text-align:center; min-width:90px; }
+  .targa-badge .t { font-family:var(--display); font-size:16px; letter-spacing:2px; color:var(--accent); }
+  .targa-badge .m { font-size:9px; font-family:var(--mono); color:var(--text2); margin-top:2px; }
+
+  .camion-info { display:flex; flex-direction:column; gap:4px; }
+  .times { font-family:var(--mono); font-size:12px; display:flex; gap:10px; }
+  .t-in { color:var(--green); }
+  .t-out { color:var(--red); }
+  .t-pend { color:var(--text3); font-size:11px; }
+  .tare { font-size:11px; color:var(--text2); font-family:var(--mono); }
+
+  .sbadge { display:inline-block; padding:2px 7px; border-radius:4px; font-size:9px; font-family:var(--mono); letter-spacing:1px; margin-top:2px; }
+  .s-in { background:rgba(34,197,94,0.12); color:var(--green); border:1px solid rgba(34,197,94,0.3); }
+  .s-out { background:rgba(239,68,68,0.12); color:var(--red); border:1px solid rgba(239,68,68,0.3); }
+
+  .neto-block { text-align:right; }
+  .neto-num { font-family:var(--display); font-size:20px; color:var(--accent); }
+  .neto-label { font-size:9px; font-family:var(--mono); color:var(--text2); }
+  .neto-empty { font-size:11px; font-family:var(--mono); color:var(--text3); }
+
+  .empty-state { text-align:center; padding:32px; color:var(--text3); font-family:var(--mono); font-size:12px; border:1px dashed var(--border); border-radius:10px; }
+  .loading { text-align:center; padding:24px; color:var(--text2); font-family:var(--mono); font-size:12px; animation:pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  @media(max-width:540px) {
+    .section-divider { grid-template-columns:1fr; }
+    .bottom-row { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">OBRA R-25 <span>// CAMIONES</span></div>
+  <div class="clock" id="clock"></div>
+</header>
+
+<main>
+  <div class="stats">
+    <div class="stat"><div class="n" id="sTotal">0</div><div class="l">Hoy</div></div>
+    <div class="stat"><div class="n" id="sActivos">0</div><div class="l">En obra</div></div>
+    <div class="stat"><div class="n" id="sTon">0t</div><div class="l">Toneladas</div></div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">🚛 Registrar Movimiento</div>
+
+    <div class="targa-row">
+      <label>Matrícula (targa)</label>
+      <input type="text" id="f-mat" class="targa-input" placeholder="1234-ABC" maxlength="10">
+    </div>
+
+    <div class="section-divider">
+      <div class="section-block">
+        <div class="section-label ent">▶ ENTRADA</div>
+        <div class="form-group">
+          <label>Hora entrada</label>
+          <input type="time" id="f-hent">
+        </div>
+        <div class="form-group">
+          <label>Tara vacío (t)</label>
+          <input type="number" id="f-tv" placeholder="12.5" step="0.1" min="0">
+        </div>
+      </div>
+      <div class="section-block">
+        <div class="section-label sal">◀ SALIDA</div>
+        <div class="form-group">
+          <label>Hora salida</label>
+          <input type="time" id="f-hsal">
+        </div>
+        <div class="form-group">
+          <label>Tara lleno (t)</label>
+          <input type="number" id="f-tl" placeholder="28.5" step="0.1" min="0">
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-row">
+      <div class="form-group" style="margin:0">
+        <label>Material</label>
+        <select id="f-mat2" onchange="toggleOtros(this.value)">
+          <option value="Tierra">Tierra</option>
+          <option value="Cantos rodados">Cantos rodados</option>
+          <option value="Arena">Arena</option>
+          <option value="Tierra y rocas mixtas">Tierra y rocas mixtas</option>
+          <option value="Grava">Grava</option>
+          <option value="Otros">Otros...</option>
+        </select>
+        <input type="text" id="f-mat-otros" placeholder="Especifica el material..." style="display:none; margin-top:6px;">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Conductor</label>
+        <input type="text" id="f-cond" placeholder="Nombre...">
+      </div>
+      <div class="form-group full" style="margin:0">
+        <label>Notas</label>
+        <input type="text" id="f-notas" placeholder="Opcional...">
+      </div>
+    </div>
+
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-clear" onclick="limpiar()">LIMPIAR</button>
+      <button class="btn btn-save" id="btn-save" onclick="guardar()">GUARDAR</button>
+    </div>
+    <div id="btn-eliminar-row" style="display:none; margin-top:10px;">
+      <button class="btn" onclick="eliminar()" style="width:100%; background:#1a1a1a; color:#ef4444; border:1px solid #ef4444; font-family:'Bebas Neue',cursive; font-size:16px; letter-spacing:2px; padding:12px; border-radius:8px; cursor:pointer;">🗑 ELIMINAR REGISTRO</button>
+    </div>
+    <div class="notifica" id="notif"></div>
+  </div>
+
+  <div class="totale-bar">
+    <div>
+      <div class="totale-label">Toneladas netas hoy</div>
+      <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px">tierra salida cantiere</div>
+    </div>
+    <span class="totale-num" id="totalTon">— t</span>
+  </div>
+
+  <div class="lista-header">
+    <div class="lista-title">Movimientos del día</div>
+    <button class="refresh-btn" onclick="cargarLista()">↻ Actualizar</button>
+  </div>
+
+  <div class="camion-list" id="lista">
+    <div class="loading">Cargando...</div>
+  </div>
+</main>
+
+<script>
+function toggleOtros(val) {
+  const campo = document.getElementById('f-mat-otros');
+  campo.style.display = val === 'Otros' ? 'block' : 'none';
+  if (val !== 'Otros') campo.value = '';
+}
+
+function getMaterial() {
+  const sel = document.getElementById('f-mat2').value;
+  if (sel === 'Otros') {
+    const txt = document.getElementById('f-mat-otros').value.trim();
+    return txt || 'Otros';
+  }
+  return sel;
+}
+
+const WH_SAVE = 'https://demon8n-n8n.cup5ta.easypanel.host/webhook/camion-save';
+const WH_LIST = 'https://demon8n-n8n.cup5ta.easypanel.host/webhook/camion-lista';
+
+function oggi() {
+  return new Date().toLocaleDateString('es-ES', {day:'2-digit',month:'2-digit',year:'numeric'});
+}
+
+function updateClock() {
+  const d = new Date();
+  document.getElementById('clock').innerHTML =
+    d.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'}).toUpperCase() +
+    '<br>' + d.toTimeString().slice(0,5);
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('f-hent').value = new Date().toTimeString().slice(0,5);
+  document.getElementById('f-mat').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase(); });
+  cargarLista();
+});
+
+async function guardar() {
+  const mat = document.getElementById('f-mat').value.trim().toUpperCase();
+  const hent = document.getElementById('f-hent').value;
+  const hsal = document.getElementById('f-hsal').value;
+  const tv = document.getElementById('f-tv').value;
+  const tl = document.getElementById('f-tl').value;
+  const material = getMaterial();
+  const cond = document.getElementById('f-cond').value.trim();
+  const notas = document.getElementById('f-notas').value.trim();
+
+  if (!mat) { notif('⚠️ Matrícula obligatoria', 'err'); return; }
+  if (!hent || !tv) { notif('⚠️ Hora entrada y tara vacío son obligatorios', 'err'); return; }
+
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true; btn.textContent = 'GUARDANDO...';
+
+  try {
+    const res = await fetch(WH_SAVE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        Fecha: oggi(),
+        Matricula: mat,
+        'Hora Entrada': hent,
+        'Hora Salida': hsal || '',
+        'Tara Vacio (t)': tv ? parseFloat(tv) : '',
+        'Tara Lleno (t)': tl ? parseFloat(tl) : '',
+        Material: material,
+        Conductor: cond,
+        Notas: notas
+      })
+    });
+
+    if (res.ok) {
+      notif(hsal ? `✅ ${mat} — entrada ${hent} · salida ${hsal}` : `✅ ${mat} — entrada ${hent} registrada`, 'ok');
+      limpiar();
+      setTimeout(cargarLista, 800);
+    } else { throw new Error(); }
+  } catch(e) {
+    notif('❌ Error de conexión — verifica n8n webhook', 'err');
+  }
+
+  btn.disabled = false; btn.textContent = 'GUARDAR';
+}
+
+function limpiar() {
+  rigaSelezionata = null;
+  document.getElementById('btn-eliminar-row').style.display = 'none';
+  ['f-mat','f-hsal','f-tv','f-tl','f-cond','f-notas','f-mat-otros'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-mat2').value = 'Tierra';
+  document.getElementById('f-mat-otros').style.display = 'none';
+  document.getElementById('f-hent').value = new Date().toTimeString().slice(0,5);
+}
+
+function notif(msg, tipo) {
+  const el = document.getElementById('notif');
+  el.textContent = msg; el.className = 'notifica ' + tipo;
+  setTimeout(() => { el.className = 'notifica'; }, 5000);
+}
+
+function precompila(c) {
+  rigaSelezionata = c;
+  document.getElementById('f-mat').value = c.Matricula || '';
+  document.getElementById('f-hent').value = c['Hora Entrada'] || '';
+  document.getElementById('f-hsal').value = c['Hora Salida'] || '';
+  document.getElementById('f-tv').value = c['Tara Vacio (t)'] || '';
+  document.getElementById('f-tl').value = c['Tara Lleno (t)'] || '';
+  document.getElementById('f-cond').value = c.Conductor || '';
+  document.getElementById('f-notas').value = c.Notas || '';
+  // Mostra il tasto eliminar
+  document.getElementById('btn-eliminar-row').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function cargarLista() {
+  const lista = document.getElementById('lista');
+  lista.innerHTML = '<div class="loading">Cargando...</div>';
+
+  try {
+    const res = await fetch(WH_LIST, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fecha: oggi() })
+    });
+    const data = await res.json();
+    renderLista(Array.isArray(data) ? data : []);
+  } catch(e) {
+    lista.innerHTML = '<div class="empty-state">Configura el webhook /camion-lista en n8n<br><br>El guardado funciona de todas formas ✅</div>';
+    updateStats([], 0, 0);
+  }
+}
+
+function renderLista(camiones) {
+  const lista = document.getElementById('lista');
+  if (!camiones.length) {
+    lista.innerHTML = '<div class="empty-state">Sin movimientos registrados hoy</div>';
+    updateStats([], 0, 0); return;
+  }
+
+  let totalNeto = 0, attivi = 0;
+
+  lista.innerHTML = camiones.map(c => {
+    const tv = parseFloat(c['Tara Vacio (t)']) || 0;
+    const tl = parseFloat(c['Tara Lleno (t)']) || 0;
+    const neto = tl > 0 ? (tl - tv) : null;
+    if (neto) totalNeto += neto;
+    const uscito = c['Hora Salida'] && c['Hora Salida'] !== '';
+    if (!uscito) attivi++;
+
+    return `<div class="camion-row" onclick='precompila(${JSON.stringify(c)})' title="Clicca per modificare">
+      <div class="targa-badge">
+        <div class="t">${c.Matricula || '—'}</div>
+        <div class="m">${c.Material || '—'}</div>
+      </div>
+      <div class="camion-info">
+        <div class="times">
+          <span class="t-in">▶ ${c['Hora Entrada'] || '—'}</span>
+          ${uscito ? `<span class="t-out">◀ ${c['Hora Salida']}</span>` : `<span class="t-pend">salida pendiente</span>`}
+        </div>
+        <div class="tare">Vacío: ${tv}t${tl > 0 ? ` · Lleno: ${tl}t` : ''}${c.Conductor ? ` · ${c.Conductor}` : ''}</div>
+        <span class="sbadge ${uscito ? 's-out' : 's-in'}">${uscito ? 'SALIDO' : 'EN OBRA'}</span>
+      </div>
+      <div class="neto-block">
+        ${neto !== null ? `<div class="neto-num">${neto.toFixed(1)}t</div><div class="neto-label">NETO</div>` : `<div class="neto-empty">—</div>`}
+      </div>
+    </div>`;
+  }).join('');
+
+  updateStats(camiones, attivi, totalNeto);
+}
+
+// Riga selezionata corrente
+let rigaSelezionata = null;
+
+function eliminar() {
+  if (!rigaSelezionata) return;
+  const mat = rigaSelezionata.Matricula;
+  const data = rigaSelezionata.Fecha;
+  // Converti data da YYYY-MM-DD a DD/MM/YYYY se necessario
+  let dataFormattata = data;
+  if (data && data.includes('-')) {
+    const [y,m,d] = data.split('-');
+    dataFormattata = d+'/'+m+'/'+y;
+  }
+  if (!confirm(`⚠️ Eliminar el camión ${mat} del ${dataFormattata}?\n\nEsta acción no se puede deshacer.`)) return;
+  fetch(`https://demon8n-n8n.cup5ta.easypanel.host/webhook/camion-eliminar`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ Matricula: mat, Fecha: dataFormattata })
+  }).then(r => {
+    if (r.ok) {
+      notif(`✅ ${mat} eliminado correctamente`, "ok");
+      rigaSelezionata = null;
+      document.getElementById("btn-eliminar-row").style.display = "none";
+      limpiar();
+      setTimeout(cargarLista, 800);
+    } else { notif("❌ Error al eliminar", "err"); }
+  }).catch(() => notif("❌ Error de conexión", "err"));
+}
+
+function updateStats(camiones, attivi, totalNeto) {
+  document.getElementById('sTotal').textContent = camiones.length;
+  document.getElementById('sActivos').textContent = attivi;
+  document.getElementById('sTon').textContent = totalNeto.toFixed(1) + 't';
+  document.getElementById('totalTon').textContent = totalNeto.toFixed(1) + ' t';
+}
+</script>
+</body>
+</html>
