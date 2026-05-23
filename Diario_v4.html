@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OBRA R-25 — Diario</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#F5F6FA;--surface:#FFFFFF;--surface2:#EEF0F5;
+    --border:#C8CDD8;--accent:#1C4587;--accent2:#2563EB;
+    --green:#16A34A;--red:#DC2626;--blue:#1D4ED8;
+    --text:#111827;--text2:#4B5563;--text3:#9CA3AF;
+    --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--display:'Bebas Neue',cursive;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+  header{background:var(--accent);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.15);}
+  .logo{font-family:var(--display);font-size:22px;letter-spacing:2px;color:#FFFFFF;}
+  .logo span{color:rgba(255,255,255,0.7);font-size:12px;font-family:var(--mono);margin-left:10px;}
+  .clock{font-family:var(--mono);font-size:12px;color:rgba(255,255,255,0.85);text-align:right;line-height:1.6;}
+  .nav-tabs{display:flex;gap:6px;background:var(--accent);padding:0 20px 10px;overflow-x:auto;}
+  .nav-tab{padding:10px 16px;border:2px solid rgba(255,255,255,0.4);border-radius:8px;background:none;color:rgba(255,255,255,0.8);font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+  .nav-tab.active{background:#FFFFFF;color:var(--accent);border-color:#FFFFFF;}
+  .nav-tab:hover:not(.active){background:rgba(255,255,255,0.15);color:#FFFFFF;}
+  .panel{display:none;}.panel.active{display:block;}
+  main{max-width:720px;margin:0 auto;padding:20px 16px;}
+  .form-card{background:var(--surface);border:2px solid var(--border);border-radius:14px;padding:22px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+  .form-title{font-family:var(--display);font-size:22px;letter-spacing:1px;color:var(--accent);margin-bottom:18px;border-bottom:2px solid var(--border);padding-bottom:10px;}
+  .form-group{margin-bottom:16px;}.form-group:last-child{margin-bottom:0;}
+  label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;}
+  input,select,textarea{background:var(--surface2);border:2px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--sans);font-size:16px;padding:12px 14px;outline:none;transition:border-color 0.2s;width:100%;}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent2);background:#fff;}
+  input::placeholder,textarea::placeholder{color:var(--text3);}
+  select option{background:#fff;}
+  textarea{resize:vertical;min-height:80px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .tipo-selector{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .tipo-btn{padding:14px;border:2px solid var(--border);border-radius:10px;background:var(--surface2);color:var(--text2);font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer;text-align:center;transition:all 0.2s;}
+  .tipo-btn.active-contrato{background:#DCFCE7;border-color:var(--green);color:var(--green);}
+  .tipo-btn.active-hora{background:#DBEAFE;border-color:var(--blue);color:var(--blue);}
+  .operai-container{background:var(--surface2);border:2px solid var(--border);border-radius:8px;padding:8px;min-height:52px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;cursor:text;transition:border-color 0.2s;}
+  .operai-container:focus-within{border-color:var(--accent2);background:#fff;}
+  .operaio-tag{background:var(--accent);color:#fff;padding:6px 10px;border-radius:6px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px;white-space:nowrap;}
+  .operaio-tag .rm{cursor:pointer;font-size:16px;line-height:1;opacity:0.8;}
+  .operai-input{background:none;border:none;outline:none;color:var(--text);font-family:var(--sans);font-size:15px;padding:4px;min-width:130px;flex:1;}
+  .operai-hint{font-size:12px;color:var(--text3);margin-top:5px;}
+  .suggest-box{position:relative;}
+  .suggest-list{display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:2px solid var(--accent);border-radius:8px;z-index:50;max-height:200px;overflow-y:auto;margin-top:2px;box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+  .suggest-item{padding:12px 14px;font-size:15px;cursor:pointer;transition:background 0.15s;border-bottom:1px solid var(--border);font-weight:500;}
+  .suggest-item:last-child{border-bottom:none;}
+  .suggest-item:hover{background:var(--surface2);color:var(--accent);}
+  .horas-field{display:none;}.horas-field.visible{display:block;}
+  .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px;}
+  .btn{padding:16px;border:none;border-radius:10px;font-family:var(--sans);font-size:17px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+  .btn-save{background:var(--accent);color:#fff;}
+  .btn-save:hover{background:var(--accent2);}
+  .btn-clear{background:var(--surface2);color:var(--text2);border:2px solid var(--border);}
+  .btn:disabled{opacity:0.4;cursor:not-allowed;}
+  #btn-eliminar-row{display:none;margin-top:12px;}
+  #btn-eliminar-row button{width:100%;background:#FEE2E2;color:var(--red);border:2px solid var(--red);font-family:var(--sans);font-size:17px;font-weight:700;padding:16px;border-radius:10px;cursor:pointer;transition:all 0.2s;}
+  #btn-eliminar-row button:hover{background:#DC2626;color:#fff;}
+  .notifica{display:none;padding:14px 16px;border-radius:8px;font-size:14px;font-weight:500;margin-top:14px;}
+  .notifica.ok{background:#DCFCE7;border:2px solid var(--green);color:#15803D;display:block;}
+  .notifica.err{background:#FEE2E2;border:2px solid var(--red);color:#B91C1C;display:block;}
+  .lista-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .lista-title{font-family:var(--display);font-size:20px;letter-spacing:1px;color:var(--accent);}
+  .refresh-btn{background:var(--accent);color:#fff;padding:10px 18px;border-radius:8px;font-size:14px;font-weight:600;border:none;cursor:pointer;}
+  .filtro-bar{display:flex;gap:8px;margin-bottom:16px;align-items:center;}
+  .filtro-bar input[type="date"]{flex:1;background:var(--surface);border:2px solid var(--border);border-radius:8px;color:var(--text);font-size:15px;padding:10px 14px;outline:none;}
+  .btn-filtro{background:var(--surface);border:2px solid var(--border);color:var(--text2);padding:10px 16px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all 0.2s;}
+  .btn-filtro.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .diario-list{display:flex;flex-direction:column;gap:10px;}
+  .diario-row{background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:all 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+  .diario-row:hover{border-color:var(--accent);}
+  .diario-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+  .diario-empresa{font-family:var(--display);font-size:18px;letter-spacing:1px;color:var(--accent);}
+  .diario-fecha{font-size:12px;font-weight:600;color:#fff;background:var(--accent);padding:4px 10px;border-radius:5px;font-family:var(--mono);}
+  .diario-trabajo{font-size:15px;color:var(--text);margin-bottom:10px;line-height:1.5;}
+  .diario-footer{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .tag{display:inline-block;padding:5px 10px;border-radius:6px;font-size:12px;font-weight:600;}
+  .tag-contrato{background:#DCFCE7;color:#15803D;border:1.5px solid #86EFAC;}
+  .tag-hora{background:#DBEAFE;color:#1D4ED8;border:1.5px solid #93C5FD;}
+  .tag-operaio{background:#EEF0F5;color:var(--accent);border:1.5px solid var(--border);}
+  .diario-notas{font-size:13px;color:var(--text2);margin-top:8px;font-style:italic;padding-top:8px;border-top:1px solid var(--border);}
+  .catalogo-empresa{background:var(--surface);border:2px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden;}
+  .catalogo-empresa-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;background:var(--surface2);}
+  .catalogo-empresa-name{font-family:var(--display);font-size:18px;letter-spacing:1px;color:var(--accent);}
+  .catalogo-empresa-count{font-size:12px;font-weight:600;color:var(--text2);}
+  .catalogo-operarios{padding:12px 18px 14px;display:flex;flex-wrap:wrap;gap:8px;}
+  .catalogo-operario-tag{background:var(--surface2);border:2px solid var(--border);border-radius:7px;padding:8px 12px;font-size:14px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:10px;}
+  .catalogo-operario-tag .rm-op{cursor:pointer;color:var(--text3);font-size:18px;font-weight:700;}
+  .catalogo-operario-tag .rm-op:hover{color:var(--red);}
+  .add-row{display:flex;gap:8px;margin-top:10px;width:100%;}
+  .add-row input{flex:1;font-size:15px;padding:10px 12px;}
+  .btn-add{padding:10px 18px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;}
+  .btn-add-empresa{width:100%;padding:14px;background:none;border:2px dashed var(--border);color:var(--text2);border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;margin-top:10px;}
+  .notifica-gest{display:none;padding:12px 16px;border-radius:8px;font-size:14px;font-weight:500;margin-top:12px;}
+  .notifica-gest.ok{background:#DCFCE7;border:2px solid var(--green);color:#15803D;display:block;}
+  .notifica-gest.err{background:#FEE2E2;border:2px solid var(--red);color:#B91C1C;display:block;}
+  /* ENVIAR */
+  .email-chips{background:var(--surface2);border:2px solid var(--border);border-radius:8px;padding:8px;min-height:52px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;cursor:text;transition:border-color 0.2s;}
+  .email-chips:focus-within{border-color:var(--accent2);}
+  .email-chip{background:var(--accent);color:#fff;padding:5px 10px;border-radius:6px;font-size:13px;display:flex;align-items:center;gap:8px;}
+  .email-chip .rm{cursor:pointer;font-size:16px;opacity:0.8;}
+  .email-chip-input{background:none;border:none;outline:none;color:var(--text);font-size:15px;padding:4px;min-width:180px;flex:1;}
+  .email-hint{font-size:12px;color:var(--text3);margin-top:5px;}
+  .preview-box{background:var(--surface2);border:2px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;}
+  .preview-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);}
+  .preview-row:last-child{border-bottom:none;}
+  .preview-label{font-weight:600;color:var(--text2);font-size:13px;}
+  .preview-value{color:var(--text);font-size:13px;}
+  .btn-test{background:#16A34A;color:#fff;width:100%;padding:16px;border:none;border-radius:10px;font-size:17px;font-weight:700;cursor:pointer;margin-bottom:10px;transition:all 0.2s;}
+  .btn-test:hover{background:#15803D;}
+  .btn-send{background:var(--accent);color:#fff;width:100%;padding:16px;border:none;border-radius:10px;font-size:17px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+  .btn-send:hover{background:var(--accent2);}
+  .btn-test:disabled,.btn-send:disabled{opacity:0.4;cursor:not-allowed;}
+  .spinner{display:inline-block;width:18px;height:18px;border:3px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:8px;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .notifica-env{display:none;padding:14px 16px;border-radius:8px;font-size:14px;font-weight:500;margin-top:14px;}
+  .notifica-env.ok{background:#DCFCE7;border:2px solid var(--green);color:#15803D;display:block;}
+  .notifica-env.err{background:#FEE2E2;border:2px solid var(--red);color:#B91C1C;display:block;}
+  .empty-state{text-align:center;padding:36px;color:var(--text3);font-size:15px;border:2px dashed var(--border);border-radius:12px;}
+  .loading{text-align:center;padding:28px;color:var(--text2);font-size:15px;animation:pulse 1.5s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+  @media(max-width:540px){.grid2{grid-template-columns:1fr;}.filtro-bar{flex-wrap:wrap;}.btn{font-size:16px;padding:14px;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">OBRA R-25 <span>// DIARIO</span></div>
+  <div class="clock" id="clock"></div>
+</header>
+
+<div class="nav-tabs">
+  <button class="nav-tab active" onclick="showPanel('registro',this)">✏️ REGISTRAR</button>
+  <button class="nav-tab" onclick="showPanel('lista',this);cargarLista()">📋 LISTA</button>
+  <button class="nav-tab" onclick="showPanel('gestion',this);cargarCatalogo()">⚙️ GESTIÓN</button>
+  <button class="nav-tab" onclick="showPanel('enviar',this);initEnviar()">📤 ENVIAR PDF</button>
+</div>
+
+<!-- REGISTRO -->
+<div class="panel active" id="panel-registro">
+<main>
+  <div class="form-card">
+    <div class="form-title">📒 Nuevo Registro</div>
+    <div class="grid2" style="margin-bottom:16px">
+      <div class="form-group" style="margin:0">
+        <label>Fecha</label>
+        <input type="date" id="f-fecha">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Empresa</label>
+        <div class="suggest-box">
+          <input type="text" id="f-empresa" placeholder="Empresa..." autocomplete="off" oninput="filterEmpresas(this.value)" onfocus="filterEmpresas(this.value)">
+          <div class="suggest-list" id="suggest-empresa"></div>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Trabajadores — Intro o coma para añadir</label>
+      <div class="operai-container" id="operai-container" onclick="document.getElementById('operai-input').focus()">
+        <input type="text" id="operai-input" class="operai-input" placeholder="Nombre del trabajador...">
+      </div>
+      <div class="suggest-box"><div class="suggest-list" id="suggest-operario"></div></div>
+      <div class="operai-hint">↵ Intro o , para añadir · toca × para eliminar</div>
+    </div>
+    <div class="form-group">
+      <label>Trabajo realizado</label>
+      <textarea id="f-trabajo" placeholder="Ej: Realización pozo V5..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Tipo de trabajo</label>
+      <div class="tipo-selector">
+        <div class="tipo-btn active-contrato" id="btn-contrato" onclick="setTipo('contrato')">✓ CONTRATO</div>
+        <div class="tipo-btn" id="btn-hora" onclick="setTipo('hora')">⏱ POR HORA</div>
+      </div>
+    </div>
+    <div class="form-group horas-field" id="horas-field">
+      <label>Horas trabajadas</label>
+      <input type="number" id="f-horas" placeholder="8" min="0" step="0.5">
+    </div>
+    <div class="form-group">
+      <label>Notas</label>
+      <input type="text" id="f-notas" placeholder="Opcional...">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-clear" onclick="limpiar()">LIMPIAR</button>
+      <button class="btn btn-save" id="btn-save" onclick="guardar()">GUARDAR</button>
+    </div>
+    <div id="btn-eliminar-row"><button onclick="eliminar()">🗑 ELIMINAR ESTE REGISTRO</button></div>
+    <div class="notifica" id="notif"></div>
+  </div>
+</main>
+</div>
+
+<!-- LISTA -->
+<div class="panel" id="panel-lista">
+<main>
+  <div class="lista-header">
+    <div class="lista-title">Registros</div>
+    <button class="refresh-btn" onclick="cargarLista()">↻ Actualizar</button>
+  </div>
+  <div class="filtro-bar">
+    <input type="date" id="filtro-fecha" onchange="onFiltroChange()">
+    <button class="btn-filtro active" id="btn-hoy" onclick="filtroHoy()">HOY</button>
+    <button class="btn-filtro" id="btn-todos" onclick="filtroTodos()">TODOS</button>
+  </div>
+  <div class="diario-list" id="lista"><div class="loading">Cargando...</div></div>
+</main>
+</div>
+
+<!-- GESTIÓN -->
+<div class="panel" id="panel-gestion">
+<main>
+  <div class="form-card">
+    <div class="form-title">⚙️ Empresas y Operarios</div>
+    <div id="catalogo-section"><div class="loading">Cargando...</div></div>
+    <button class="btn-add-empresa" onclick="addEmpresaForm()">+ AÑADIR NUEVA EMPRESA</button>
+    <div id="nueva-empresa-form" style="display:none;margin-top:12px;">
+      <div class="add-row">
+        <input type="text" id="nueva-empresa-input" placeholder="Nombre de la empresa...">
+        <button class="btn-add" onclick="guardarEmpresa()">AÑADIR</button>
+      </div>
+    </div>
+    <div class="notifica-gest" id="notif-gestion"></div>
+  </div>
+</main>
+</div>
+
+<!-- ENVIAR PDF -->
+<div class="panel" id="panel-enviar">
+<main>
+  <div class="form-card">
+    <div class="form-title">📤 Enviar Parte de Obra</div>
+
+    <div class="form-group">
+      <label>Fecha del parte</label>
+      <input type="date" id="env-fecha" onchange="aggiornaPreview()">
+    </div>
+
+    <div class="form-group" id="preview-container" style="display:none;">
+      <label>Vista previa</label>
+      <div class="preview-box" id="preview-box"></div>
+    </div>
+
+    <div class="form-group">
+      <label>Destinatarios — Intro para añadir</label>
+      <div class="email-chips" id="email-chips" onclick="document.getElementById('email-chip-input').focus()">
+        <input type="email" id="email-chip-input" class="email-chip-input" placeholder="email@ejemplo.com">
+      </div>
+      <div class="email-hint">↵ Intro para añadir · toca × para eliminar · se guardan automáticamente</div>
+    </div>
+
+    <button class="btn-test" id="btn-test" onclick="enviarPDF(true)">✅ TEST — ENVIAR SOLO A MI EMAIL</button>
+    <button class="btn-send" id="btn-send" onclick="enviarPDF(false)">📤 ENVIAR A DESTINATARIOS</button>
+    <div class="notifica-env" id="notif-env"></div>
+  </div>
+</main>
+</div>
+
+<script>
+const N8N = 'https://demon8n-n8n.cup5ta.easypanel.host/webhook';
+const WH_SAVE     = N8N + '/diario-save';
+const WH_LIST     = N8N + '/diario-lista';
+const WH_DELETE   = N8N + '/diario-eliminar';
+const WH_CAT_LIST = N8N + '/catalogo-lista';
+const WH_CAT_SAVE = N8N + '/catalogo-save';
+const WH_CAT_DEL  = N8N + '/catalogo-eliminar';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxG4PDya7YaBMIo9D6zUysMpZoSCmR33Z6WyfQNtAyZLKIuy5g-4QHG47UyvNxb4PX-/exec';
+
+let tipoAttivo='contrato', operaiList=[], rigaSelezionata=null, mostraTutti=false, catalogo=[], emailList=[];
+
+function updateClock(){const d=new Date();document.getElementById('clock').innerHTML=d.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'}).toUpperCase()+'<br>'+d.toTimeString().slice(0,5);}
+setInterval(updateClock,1000);updateClock();
+
+function inputToDate(d){if(!d)return'';if(d.includes('/'))return d;const[y,m,dd]=d.split('-');return`${dd}/${m}/${y}`;}
+function dateToInput(d){if(!d)return'';if(d.includes('-'))return d;const[dd,m,y]=d.split('/');return`${y}-${m}-${dd}`;}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const hoy=new Date().toISOString().split('T')[0];
+  document.getElementById('f-fecha').value=hoy;
+  document.getElementById('filtro-fecha').value=hoy;
+  initOperaiInput();
+  cargarCatalogo();
+  document.addEventListener('click',e=>{
+    if(!e.target.closest('.suggest-box')&&!e.target.closest('.operai-container'))
+      document.querySelectorAll('.suggest-list').forEach(s=>s.style.display='none');
+  });
+});
+
+function showPanel(name,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+
+async function cargarCatalogo(){
+  try{const res=await fetch(WH_CAT_LIST,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});const data=await res.json();catalogo=Array.isArray(data)?data:[];renderCatalogo();}
+  catch(e){catalogo=[];renderCatalogo();}
+}
+
+function filterEmpresas(val){
+  const box=document.getElementById('suggest-empresa');
+  const emp=[...new Set(catalogo.map(c=>c.Empresa))].filter(e=>e&&e.toLowerCase().includes(val.toLowerCase()));
+  if(!emp.length){box.style.display='none';return;}
+  box.innerHTML=emp.map(e=>`<div class="suggest-item" onclick="selectEmpresa('${e}')">${e}</div>`).join('');
+  box.style.display='block';
+}
+function selectEmpresa(emp){document.getElementById('f-empresa').value=emp;document.getElementById('suggest-empresa').style.display='none';filterOperarios('',emp);}
+
+function initOperaiInput(){
+  const input=document.getElementById('operai-input');
+  input.addEventListener('keydown',e=>{
+    if((e.key==='Enter'||e.key===',')&&input.value.trim()){e.preventDefault();aggiungiOperaio(input.value.replace(',','').trim());input.value='';document.getElementById('suggest-operario').style.display='none';}
+    else if(e.key==='Backspace'&&!input.value&&operaiList.length>0)rimuoviOperaio(operaiList.length-1);
+  });
+  input.addEventListener('input',()=>filterOperarios(input.value,document.getElementById('f-empresa').value));
+  input.addEventListener('focus',()=>filterOperarios(input.value,document.getElementById('f-empresa').value));
+  input.addEventListener('blur',()=>setTimeout(()=>{if(input.value.trim()){aggiungiOperaio(input.value.trim());input.value='';}document.getElementById('suggest-operario').style.display='none';},200));
+}
+
+function filterOperarios(val,empresa){
+  const box=document.getElementById('suggest-operario');
+  let ops=catalogo.filter(c=>(!empresa||c.Empresa===empresa)&&!operaiList.includes(c.Operario)).map(c=>c.Operario).filter((o,i,a)=>a.indexOf(o)===i).filter(o=>o&&o.toLowerCase().includes(val.toLowerCase()));
+  if(!ops.length){box.style.display='none';return;}
+  box.innerHTML=ops.map(o=>`<div class="suggest-item" onclick="selectOperario('${o}')">${o}</div>`).join('');
+  box.style.display='block';
+}
+function selectOperario(nome){aggiungiOperaio(nome);document.getElementById('operai-input').value='';document.getElementById('suggest-operario').style.display='none';setTimeout(()=>filterOperarios('',document.getElementById('f-empresa').value),100);}
+function aggiungiOperaio(nome){if(!nome||operaiList.includes(nome))return;operaiList.push(nome);renderTags();}
+function rimuoviOperaio(idx){operaiList.splice(idx,1);renderTags();}
+function renderTags(){
+  const container=document.getElementById('operai-container');
+  const input=document.getElementById('operai-input');
+  container.innerHTML='';
+  operaiList.forEach((nome,i)=>{const tag=document.createElement('div');tag.className='operaio-tag';tag.innerHTML=`${nome} <span class="rm" onclick="rimuoviOperaio(${i})">×</span>`;container.appendChild(tag);});
+  container.appendChild(input);
+}
+
+function setTipo(tipo){
+  tipoAttivo=tipo;
+  document.getElementById('btn-contrato').className='tipo-btn'+(tipo==='contrato'?' active-contrato':'');
+  document.getElementById('btn-hora').className='tipo-btn'+(tipo==='hora'?' active-hora':'');
+  document.getElementById('horas-field').className='form-group horas-field'+(tipo==='hora'?' visible':'');
+}
+
+async function guardar(){
+  const fecha=inputToDate(document.getElementById('f-fecha').value);
+  const empresa=document.getElementById('f-empresa').value.trim();
+  const trabajo=document.getElementById('f-trabajo').value.trim();
+  const horas=document.getElementById('f-horas').value;
+  const notas=document.getElementById('f-notas').value.trim();
+  const inputVal=document.getElementById('operai-input').value.trim();
+  if(inputVal)aggiungiOperaio(inputVal);
+  document.getElementById('operai-input').value='';
+  if(!fecha){notif('⚠️ Fecha obligatoria','err');return;}
+  if(!empresa){notif('⚠️ Empresa obligatoria','err');return;}
+  if(!operaiList.length){notif('⚠️ Añade al menos un trabajador','err');return;}
+  if(!trabajo){notif('⚠️ Describe el trabajo realizado','err');return;}
+  if(tipoAttivo==='hora'&&!horas){notif('⚠️ Indica las horas trabajadas','err');return;}
+  const btn=document.getElementById('btn-save');
+  btn.disabled=true;btn.textContent='GUARDANDO...';
+  try{
+    const res=await fetch(WH_SAVE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({Fecha:fecha,Empresa:empresa,Trabajadores:operaiList.join(', '),'Trabajo Realizado':trabajo,'Tipo (Contrato/Hora)':tipoAttivo==='contrato'?'Contrato':'Hora',Horas:tipoAttivo==='hora'?parseFloat(horas):'',Notas:notas})});
+    if(res.ok){notif(`✅ Registrado — ${empresa} · ${operaiList.join(', ')}`,'ok');limpiar();}
+    else throw new Error();
+  }catch(e){notif('❌ Error de conexión','err');}
+  btn.disabled=false;btn.textContent='GUARDAR';
+}
+
+function limpiar(){
+  rigaSelezionata=null;
+  document.getElementById('btn-eliminar-row').style.display='none';
+  document.getElementById('f-empresa').value='';
+  document.getElementById('f-trabajo').value='';
+  document.getElementById('f-horas').value='';
+  document.getElementById('f-notas').value='';
+  document.getElementById('f-fecha').value=new Date().toISOString().split('T')[0];
+  operaiList=[];renderTags();setTipo('contrato');
+}
+
+function notif(msg,tipo){const el=document.getElementById('notif');el.textContent=msg;el.className='notifica '+tipo;setTimeout(()=>{el.className='notifica';},5000);}
+
+async function eliminar(){
+  if(!rigaSelezionata)return;
+  const r=rigaSelezionata;
+  if(!confirm(`⚠️ Eliminar el registro de ${r.Empresa} del ${r.Fecha}?`))return;
+  const btn=document.getElementById('btn-eliminar-row').querySelector('button');
+  btn.textContent='ELIMINANDO...';
+  try{
+    const res=await fetch(WH_DELETE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({Fecha:r.Fecha,Empresa:r.Empresa,Trabajadores:r.Trabajadores})});
+    if(res.ok){notif('✅ Registro eliminado','ok');rigaSelezionata=null;document.getElementById('btn-eliminar-row').style.display='none';limpiar();}
+    else notif('❌ Error al eliminar','err');
+  }catch(e){notif('❌ Error de conexión','err');}
+  btn.textContent='🗑 ELIMINAR ESTE REGISTRO';
+}
+
+function precompila(c){
+  rigaSelezionata=c;
+  document.getElementById('f-fecha').value=dateToInput(c.Fecha);
+  document.getElementById('f-empresa').value=c.Empresa||'';
+  document.getElementById('f-trabajo').value=c['Trabajo Realizado']||'';
+  document.getElementById('f-notas').value=c.Notas||'';
+  operaiList=c.Trabajadores?c.Trabajadores.split(',').map(s=>s.trim()).filter(Boolean):[];
+  renderTags();
+  const tipo=(c['Tipo (Contrato/Hora)']||'').toLowerCase().includes('hora')?'hora':'contrato';
+  setTipo(tipo);
+  if(tipo==='hora')document.getElementById('f-horas').value=c.Horas||'';
+  document.getElementById('btn-eliminar-row').style.display='block';
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-registro').classList.add('active');
+  document.querySelector('.nav-tab').classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function filtroHoy(){mostraTutti=false;document.getElementById('btn-hoy').classList.add('active');document.getElementById('btn-todos').classList.remove('active');document.getElementById('filtro-fecha').value=new Date().toISOString().split('T')[0];cargarLista();}
+function filtroTodos(){mostraTutti=true;document.getElementById('btn-todos').classList.add('active');document.getElementById('btn-hoy').classList.remove('active');cargarLista();}
+function onFiltroChange(){mostraTutti=false;document.getElementById('btn-hoy').classList.remove('active');document.getElementById('btn-todos').classList.remove('active');cargarLista();}
+
+async function cargarLista(){
+  const lista=document.getElementById('lista');
+  lista.innerHTML='<div class="loading">Cargando...</div>';
+  const fechaFiltro=mostraTutti?'':inputToDate(document.getElementById('filtro-fecha').value);
+  try{
+    const res=await fetch(WH_LIST,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fecha:fechaFiltro})});
+    const data=await res.json();
+    renderLista(Array.isArray(data)?data:[]);
+  }catch(e){lista.innerHTML='<div class="empty-state">⚠️ No se puede conectar con n8n</div>';}
+}
+
+function renderLista(righe){
+  const lista=document.getElementById('lista');
+  if(!righe.length){lista.innerHTML='<div class="empty-state">Sin registros para esta fecha</div>';return;}
+  lista.innerHTML=righe.map(c=>{
+    const tipo=(c['Tipo (Contrato/Hora)']||'').toLowerCase().includes('hora')?'hora':'contrato';
+    const operai=c.Trabajadores?c.Trabajadores.split(',').map(s=>s.trim()):[];
+    const dataStr=JSON.stringify(c).replace(/'/g,"&#39;").replace(/"/g,'&quot;');
+    return`<div class="diario-row" onclick='precompila(JSON.parse(this.dataset.r))' data-r="${dataStr}">
+      <div class="diario-header"><div class="diario-empresa">${c.Empresa||'—'}</div><div class="diario-fecha">${c.Fecha||''}</div></div>
+      <div class="diario-trabajo">${c['Trabajo Realizado']||'—'}</div>
+      <div class="diario-footer">
+        <span class="tag ${tipo==='hora'?'tag-hora':'tag-contrato'}">${tipo==='hora'?`⏱ ${c.Horas||'?'}h`:'✓ CONTRATO'}</span>
+        ${operai.map(o=>`<span class="tag tag-operaio">👤 ${o}</span>`).join('')}
+      </div>
+      ${c.Notas?`<div class="diario-notas">📝 ${c.Notas}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function renderCatalogo(){
+  const section=document.getElementById('catalogo-section');
+  const empresas=[...new Set(catalogo.map(c=>c.Empresa))];
+  if(!empresas.length){section.innerHTML='<div class="empty-state">No hay empresas.</div>';return;}
+  section.innerHTML=empresas.map(emp=>{
+    const ops=catalogo.filter(c=>c.Empresa===emp);
+    const empId=emp.replace(/\s/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+    return`<div class="catalogo-empresa">
+      <div class="catalogo-empresa-header"><div class="catalogo-empresa-name">${emp}</div><div class="catalogo-empresa-count">${ops.length} operario/s</div></div>
+      <div class="catalogo-operarios">
+        ${ops.map(o=>`<div class="catalogo-operario-tag">${o.Operario} <span class="rm-op" onclick="eliminarOperario('${emp}','${o.Operario}')">×</span></div>`).join('')}
+        <div class="add-row" style="width:100%">
+          <input type="text" placeholder="Nuevo operario..." id="op-${empId}" onkeydown="if(event.key==='Enter')aggiungiOperarioEmpresa('${emp}','${empId}')">
+          <button class="btn-add" onclick="aggiungiOperarioEmpresa('${emp}','${empId}')">+</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function aggiungiOperarioEmpresa(empresa,empId){
+  const nome=document.getElementById('op-'+empId).value.trim();
+  if(!nome)return;
+  try{await fetch(WH_CAT_SAVE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({Empresa:empresa,Operario:nome})});catalogo.push({Empresa:empresa,Operario:nome});renderCatalogo();notifGest(`✅ ${nome} añadido`,'ok');}
+  catch(e){notifGest('❌ Error','err');}
+}
+async function eliminarOperario(empresa,operario){
+  if(!confirm(`¿Eliminar ${operario} de ${empresa}?`))return;
+  try{await fetch(WH_CAT_DEL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({Empresa:empresa,Operario:operario})});catalogo=catalogo.filter(c=>!(c.Empresa===empresa&&c.Operario===operario));renderCatalogo();notifGest(`✅ ${operario} eliminado`,'ok');}
+  catch(e){notifGest('❌ Error','err');}
+}
+function addEmpresaForm(){const f=document.getElementById('nueva-empresa-form');f.style.display=f.style.display==='none'?'block':'none';}
+async function guardarEmpresa(){
+  const nome=document.getElementById('nueva-empresa-input').value.trim();
+  if(!nome)return;
+  const operario=prompt(`Primer operario de "${nome}":`);
+  if(!operario)return;
+  try{await fetch(WH_CAT_SAVE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({Empresa:nome,Operario:operario})});catalogo.push({Empresa:nome,Operario:operario});document.getElementById('nueva-empresa-input').value='';document.getElementById('nueva-empresa-form').style.display='none';renderCatalogo();notifGest(`✅ Empresa "${nome}" añadida`,'ok');}
+  catch(e){notifGest('❌ Error','err');}
+}
+function notifGest(msg,tipo){const el=document.getElementById('notif-gestion');el.textContent=msg;el.className='notifica-gest '+tipo;setTimeout(()=>{el.className='notifica-gest';},5000);}
+
+// ── ENVIAR PDF ─────────────────────────────────────────────
+function initEnviar(){
+  const hoy=new Date().toISOString().split('T')[0];
+  document.getElementById('env-fecha').value=hoy;
+  // Carica email salvate
+  try{const saved=localStorage.getItem('obraEmailList');if(saved){emailList=JSON.parse(saved);renderEmailChips();}}catch(e){}
+  initEmailInput();
+  aggiornaPreview();
+}
+
+function initEmailInput(){
+  const input=document.getElementById('email-chip-input');
+  if(input._init)return;input._init=true;
+  input.addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&input.value.trim()){e.preventDefault();aggiungiEmail(input.value.trim());input.value='';}
+  });
+  input.addEventListener('blur',()=>{if(input.value.trim()){aggiungiEmail(input.value.trim());input.value='';}});
+}
+
+function aggiungiEmail(email){
+  if(!email.includes('@'))return;
+  if(emailList.includes(email))return;
+  emailList.push(email);
+  try{localStorage.setItem('obraEmailList',JSON.stringify(emailList));}catch(e){}
+  renderEmailChips();
+}
+
+function rimuoviEmail(idx){
+  emailList.splice(idx,1);
+  try{localStorage.setItem('obraEmailList',JSON.stringify(emailList));}catch(e){}
+  renderEmailChips();
+}
+
+function renderEmailChips(){
+  const container=document.getElementById('email-chips');
+  const input=document.getElementById('email-chip-input');
+  container.innerHTML='';
+  emailList.forEach((email,i)=>{
+    const chip=document.createElement('div');chip.className='email-chip';
+    chip.innerHTML=`${email} <span class="rm" onclick="rimuoviEmail(${i})">×</span>`;
+    container.appendChild(chip);
+  });
+  container.appendChild(input);
+}
+
+function aggiornaPreview(){
+  const fecha=inputToDate(document.getElementById('env-fecha').value);
+  if(!fecha)return;
+  document.getElementById('preview-box').innerHTML=`
+    <div class="preview-row"><span class="preview-label">FECHA</span><span class="preview-value">${fecha}</span></div>
+    <div class="preview-row"><span class="preview-label">OBRA</span><span class="preview-value">URBANIZACIÓN DEL SECTOR R-25</span></div>
+    <div class="preview-row"><span class="preview-label">UBICACIÓN</span><span class="preview-value">Alcocebre, Castellón</span></div>
+    <div class="preview-row"><span class="preview-label">ENCARGADO</span><span class="preview-value">Gaetano Sicignano</span></div>
+    <div class="preview-row"><span class="preview-label">JEFE DE OBRA</span><span class="preview-value">Agustín</span></div>`;
+  document.getElementById('preview-container').style.display='block';
+}
+
+async function enviarPDF(soloTest){
+  const fecha=inputToDate(document.getElementById('env-fecha').value);
+  if(!fecha){notifEnv('⚠️ Selecciona una fecha','err');return;}
+  if(!soloTest&&emailList.length===0){notifEnv('⚠️ Añade al menos un destinatario','err');return;}
+
+  const btnT=document.getElementById('btn-test');
+  const btnS=document.getElementById('btn-send');
+  btnT.disabled=true;btnS.disabled=true;
+  const btn=soloTest?btnT:btnS;
+  const orig=btn.innerHTML;
+  btn.innerHTML='<span class="spinner"></span>Generando PDF...';
+
+  try{
+    const params=new URLSearchParams({
+      fecha:fecha,
+      emails:(soloTest?['sicignano.ucg@gmail.com']:emailList).join(','),
+      soloTest:soloTest?'true':'false'
+    });
+    const res=await fetch(WEB_APP_URL+'?'+params.toString(),{method:'GET',redirect:'follow'});
+    const text=await res.text();
+    let data;
+    try{data=JSON.parse(text);}catch(e){data={ok:true,message:'✅ Enviado correctamente'};}
+    notifEnv(data.ok?data.message:data.message||'❌ Error',data.ok?'ok':'err');
+  }catch(e){
+    notifEnv('❌ Error de conexión con Apps Script','err');
+  }
+  btn.innerHTML=orig;btnT.disabled=false;btnS.disabled=false;
+}
+
+function notifEnv(msg,tipo){const el=document.getElementById('notif-env');el.textContent=msg;el.className='notifica-env '+tipo;setTimeout(()=>{el.className='notifica-env';},8000);}
+</script>
+</body>
+</html>
