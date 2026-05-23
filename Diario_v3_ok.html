@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OBRA R-25 — Diario</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #F0F2F5; color: #0F172A; font-family: "DM Sans", sans-serif; min-height: 100vh; }
+
+header {
+  background: #1C4587;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 62px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+.logo { font-family: "Bebas Neue", cursive; font-size: 22px; letter-spacing: 2px; color: #fff; }
+.logo em { color: rgba(255,255,255,0.6); font-style: normal; font-size: 12px; font-family: "DM Mono", monospace; margin-left: 10px; }
+.clock { font-family: "DM Mono", monospace; font-size: 12px; color: rgba(255,255,255,0.85); text-align: right; line-height: 1.7; }
+
+nav {
+  background: #1C4587;
+  padding: 0 16px 12px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+}
+.ntab {
+  padding: 10px 18px;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-radius: 8px;
+  background: none;
+  color: rgba(255,255,255,0.8);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-family: "DM Sans", sans-serif;
+}
+.ntab.active { background: #fff; color: #1C4587; border-color: #fff; }
+.ntab:hover:not(.active) { background: rgba(255,255,255,0.15); color: #fff; }
+
+section { display: none; }
+section.active { display: block; }
+
+.wrap { max-width: 720px; margin: 0 auto; padding: 20px 16px; }
+
+.card {
+  background: #fff;
+  border: 2px solid #C5CAD5;
+  border-radius: 14px;
+  padding: 22px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.card-title {
+  font-family: "Bebas Neue", cursive;
+  font-size: 22px;
+  letter-spacing: 1px;
+  color: #1C4587;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #C5CAD5;
+}
+
+.fg { margin-bottom: 16px; }
+.fg:last-child { margin-bottom: 0; }
+.fg > label { display: block; font-size: 13px; font-weight: 700; color: #0F172A; margin-bottom: 6px; }
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.g2 .fg { margin-bottom: 0; }
+
+input, select, textarea {
+  background: #E8ECF2;
+  border: 2px solid #C5CAD5;
+  border-radius: 8px;
+  color: #0F172A;
+  font-family: "DM Sans", sans-serif;
+  font-size: 16px;
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus { border-color: #2563EB; background: #fff; }
+input::placeholder, textarea::placeholder { color: #94A3B8; }
+select option { background: #fff; }
+textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+.tipo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tipo-btn {
+  padding: 14px;
+  border: 2px solid #C5CAD5;
+  border-radius: 10px;
+  background: #E8ECF2;
+  color: #475569;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+  font-family: "DM Sans", sans-serif;
+}
+.tipo-btn.active-c { background: #DCFCE7; border-color: #16A34A; color: #16A34A; }
+.tipo-btn.active-h { background: #DBEAFE; border-color: #1D4ED8; color: #1D4ED8; }
+
+#row-horas { display: none; margin-top: 16px; }
+
+.tags-box {
+  background: #E8ECF2;
+  border: 2px solid #C5CAD5;
+  border-radius: 8px;
+  padding: 8px;
+  min-height: 52px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  cursor: text;
+  transition: border-color 0.2s;
+}
+.tags-box:focus-within { border-color: #2563EB; background: #fff; }
+.tchip {
+  background: #1C4587;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.tchip .del { cursor: pointer; font-size: 16px; opacity: 0.75; line-height: 1; }
+.tchip .del:hover { opacity: 1; }
+.tag-input-el {
+  background: none; border: none; outline: none;
+  color: #0F172A; font-family: "DM Sans", sans-serif;
+  font-size: 15px; padding: 4px; min-width: 140px; flex: 1;
+}
+.hint { font-size: 12px; color: #94A3B8; margin-top: 5px; }
+
+.rel { position: relative; }
+.dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: #fff;
+  border: 2px solid #1C4587;
+  border-radius: 8px;
+  z-index: 200;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+.ditem {
+  padding: 12px 14px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 1px solid #C5CAD5;
+  transition: background 0.15s;
+}
+.ditem:last-child { border-bottom: none; }
+.ditem:hover { background: #E8ECF2; color: #1C4587; }
+
+.btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+.btn {
+  padding: 16px; border: none; border-radius: 10px;
+  font-family: "DM Sans", sans-serif;
+  font-size: 17px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+}
+.btn-prim { background: #1C4587; color: #fff; }
+.btn-prim:hover { background: #2563EB; }
+.btn-sec { background: #E8ECF2; color: #475569; border: 2px solid #C5CAD5; }
+.btn-sec:hover { border-color: #0F172A; color: #0F172A; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+#btn-del {
+  width: 100%; background: #FEE2E2; color: #DC2626;
+  border: 2px solid #DC2626; font-family: "DM Sans", sans-serif;
+  font-size: 17px; font-weight: 700; padding: 16px;
+  border-radius: 10px; cursor: pointer; margin-top: 12px;
+  display: none; transition: all 0.2s;
+}
+#btn-del:hover { background: #DC2626; color: #fff; }
+
+.alert { display: none; padding: 14px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; margin-top: 14px; line-height: 1.5; }
+.alert.ok { background: #DCFCE7; border: 2px solid #16A34A; color: #15803D; display: block; }
+.alert.err { background: #FEE2E2; border: 2px solid #DC2626; color: #B91C1C; display: block; }
+
+.list-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.list-hdr h3 { font-family: "Bebas Neue", cursive; font-size: 20px; letter-spacing: 1px; color: #1C4587; }
+.btn-ref { background: #1C4587; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: "DM Sans", sans-serif; }
+.btn-ref:hover { background: #2563EB; }
+
+.fbar { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
+.fbar input[type=date] { flex: 1; background: #fff; border: 2px solid #C5CAD5; border-radius: 8px; color: #0F172A; font-size: 15px; padding: 10px 14px; outline: none; }
+.fbar input[type=date]:focus { border-color: #1C4587; }
+.fbtn { background: #fff; border: 2px solid #C5CAD5; color: #475569; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s; font-family: "DM Sans", sans-serif; }
+.fbtn.active { background: #1C4587; border-color: #1C4587; color: #fff; }
+.fbtn:hover:not(.active) { border-color: #1C4587; color: #1C4587; }
+
+.rlist { display: flex; flex-direction: column; gap: 10px; }
+.rrow {
+  background: #fff; border: 2px solid #C5CAD5; border-radius: 12px;
+  padding: 16px; cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.rrow:hover { border-color: #1C4587; box-shadow: 0 3px 10px rgba(28,69,135,0.1); }
+.rrow-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.rrow-emp { font-family: "Bebas Neue", cursive; font-size: 18px; letter-spacing: 1px; color: #1C4587; }
+.rrow-fecha { font-size: 12px; font-weight: 600; color: #fff; background: #1C4587; padding: 4px 10px; border-radius: 5px; font-family: "DM Mono", monospace; }
+.rrow-job { font-size: 15px; color: #0F172A; margin-bottom: 10px; line-height: 1.5; }
+.rrow-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.rtag { display: inline-block; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+.rtag-c { background: #DCFCE7; color: #15803D; border: 1.5px solid #86EFAC; }
+.rtag-h { background: #DBEAFE; color: #1D4ED8; border: 1.5px solid #93C5FD; }
+.rtag-o { background: #EEF0F5; color: #1C4587; border: 1.5px solid #C5CAD5; }
+.rrow-note { font-size: 13px; color: #475569; margin-top: 8px; font-style: italic; padding-top: 8px; border-top: 1px solid #C5CAD5; }
+
+.emp-card { background: #fff; border: 2px solid #C5CAD5; border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+.emp-hdr { padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; background: #E8ECF2; border-bottom: 2px solid #C5CAD5; }
+.emp-name { font-family: "Bebas Neue", cursive; font-size: 18px; letter-spacing: 1px; color: #1C4587; }
+.emp-cnt { font-size: 12px; font-weight: 600; color: #475569; }
+.emp-body { padding: 14px 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+.op-chip { background: #E8ECF2; border: 2px solid #C5CAD5; border-radius: 7px; padding: 8px 12px; font-size: 14px; font-weight: 500; color: #0F172A; display: flex; align-items: center; gap: 10px; }
+.op-del { cursor: pointer; color: #94A3B8; font-size: 18px; font-weight: 700; transition: color 0.2s; }
+.op-del:hover { color: #DC2626; }
+.add-row { display: flex; gap: 8px; width: 100%; margin-top: 4px; }
+.add-row input { flex: 1; font-size: 15px; padding: 10px 12px; }
+.btn-add { padding: 10px 18px; background: #1C4587; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: "DM Sans", sans-serif; }
+.btn-add:hover { background: #2563EB; }
+.btn-newemp { width: 100%; padding: 14px; background: none; border: 2px dashed #C5CAD5; color: #475569; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 10px; font-family: "DM Sans", sans-serif; }
+.btn-newemp:hover { border-color: #1C4587; color: #1C4587; }
+.alert-g { display: none; padding: 12px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; margin-top: 12px; }
+.alert-g.ok { background: #DCFCE7; border: 2px solid #16A34A; color: #15803D; display: block; }
+.alert-g.err { background: #FEE2E2; border: 2px solid #DC2626; color: #B91C1C; display: block; }
+
+.empty { text-align: center; padding: 36px; color: #94A3B8; font-size: 15px; border: 2px dashed #C5CAD5; border-radius: 12px; }
+.loading { text-align: center; padding: 28px; color: #475569; font-size: 15px; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+@media(max-width:540px) {
+  .g2 { grid-template-columns: 1fr; }
+  .fbar { flex-wrap: wrap; }
+  .btn { font-size: 16px; padding: 14px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">OBRA R-25 <em>// DIARIO</em></div>
+  <div class="clock" id="clock"></div>
+</header>
+
+<nav>
+  <button class="ntab active" id="tab-reg" onclick="goTab('reg')">✏️ REGISTRAR</button>
+  <button class="ntab" id="tab-list" onclick="goTab('list'); loadList()">📋 LISTA</button>
+  <button class="ntab" id="tab-gest" onclick="goTab('gest'); loadCat()">⚙️ GESTIÓN</button>
+</nav>
+
+<!-- REGISTRAR -->
+<section class="active" id="sec-reg">
+<div class="wrap">
+<div class="card">
+  <div class="card-title">📒 Nuevo Registro</div>
+
+  <div class="g2">
+    <div class="fg">
+      <label>Fecha</label>
+      <input type="date" id="f-fecha">
+    </div>
+    <div class="fg">
+      <label>Empresa</label>
+      <div class="rel">
+        <input type="text" id="f-emp" placeholder="Empresa..." autocomplete="off"
+          oninput="showEmpDrop(this.value)" onfocus="showEmpDrop(this.value)">
+        <div class="dropdown" id="dd-emp"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fg">
+    <label>Trabajadores — Intro o coma para añadir</label>
+    <div class="tags-box" id="tags-box" onclick="document.getElementById('tag-inp').focus()">
+      <input type="text" id="tag-inp" class="tag-input-el" placeholder="Nombre del trabajador...">
+    </div>
+    <div class="rel"><div class="dropdown" id="dd-op"></div></div>
+    <div class="hint">↵ Intro o , para añadir · toca × para eliminar</div>
+  </div>
+
+  <div class="fg">
+    <label>Trabajo realizado</label>
+    <textarea id="f-job" placeholder="Ej: Realización pozo V5, Encofrado muro norte..."></textarea>
+  </div>
+
+  <div class="fg">
+    <label>Tipo de trabajo</label>
+    <div class="tipo-grid">
+      <button class="tipo-btn active-c" id="tb-c" onclick="setTipo('c')">✓ CONTRATO</button>
+      <button class="tipo-btn" id="tb-h" onclick="setTipo('h')">⏱ POR HORA</button>
+    </div>
+  </div>
+
+  <div id="row-horas" class="fg">
+    <label>Horas trabajadas</label>
+    <input type="number" id="f-hrs" placeholder="8" min="0" step="0.5">
+  </div>
+
+  <div class="fg">
+    <label>Notas</label>
+    <input type="text" id="f-note" placeholder="Opcional...">
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-sec" onclick="clearForm()">LIMPIAR</button>
+    <button class="btn btn-prim" id="btn-save" onclick="saveRow()">GUARDAR</button>
+  </div>
+  <button id="btn-del" onclick="delRow()">🗑 ELIMINAR ESTE REGISTRO</button>
+  <div class="alert" id="alert-r"></div>
+</div>
+</div>
+</section>
+
+<!-- LISTA -->
+<section id="sec-list">
+<div class="wrap">
+  <div class="list-hdr">
+    <h3>Registros</h3>
+    <button class="btn-ref" onclick="loadList()">↻ Actualizar</button>
+  </div>
+  <div class="fbar">
+    <input type="date" id="f-filt" onchange="onFiltroChange()">
+    <button class="fbtn active" id="fb-hoy" onclick="filtroHoy()">HOY</button>
+    <button class="fbtn" id="fb-all" onclick="filtroAll()">TODOS</button>
+  </div>
+  <div class="rlist" id="rlist"><div class="loading">Cargando...</div></div>
+</div>
+</section>
+
+<!-- GESTIÓN -->
+<section id="sec-gest">
+<div class="wrap">
+<div class="card">
+  <div class="card-title">⚙️ Empresas y Operarios</div>
+  <div id="cat-wrap"><div class="loading">Cargando catálogo...</div></div>
+  <button class="btn-newemp" onclick="toggleNewEmp()">+ AÑADIR NUEVA EMPRESA</button>
+  <div id="new-emp-form" style="display:none;margin-top:12px;">
+    <div class="add-row">
+      <input type="text" id="new-emp-val" placeholder="Nombre de la empresa...">
+      <button class="btn-add" onclick="saveNewEmp()">AÑADIR</button>
+    </div>
+  </div>
+  <div class="alert-g" id="alert-g"></div>
+</div>
+</div>
+</section>
+
+<script>
+const WH = {
+  save:    'https://demon8n-n8n.cup5ta.easypanel.host/webhook/diario-save',
+  list:    'https://demon8n-n8n.cup5ta.easypanel.host/webhook/diario-lista',
+  del:     'https://demon8n-n8n.cup5ta.easypanel.host/webhook/diario-eliminar',
+  catList: 'https://demon8n-n8n.cup5ta.easypanel.host/webhook/catalogo-lista',
+  catSave: 'https://demon8n-n8n.cup5ta.easypanel.host/webhook/catalogo-save',
+  catDel:  'https://demon8n-n8n.cup5ta.easypanel.host/webhook/catalogo-eliminar'
+};
+
+let tipo = 'c', chips = [], selRow = null, showAll = false, cat = [];
+
+// CLOCK
+function tick() {
+  const d = new Date();
+  document.getElementById('clock').innerHTML =
+    d.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'}).toUpperCase() +
+    '<br>' + d.toTimeString().slice(0,5);
+}
+setInterval(tick, 1000); tick();
+
+function d2s(s) {
+  if (!s) return '';
+  if (s.includes('/')) return s;
+  const [y,m,d] = s.split('-'); return d+'/'+m+'/'+y;
+}
+function s2d(s) {
+  if (!s) return '';
+  if (s.includes('-')) return s;
+  const [d,m,y] = s.split('/'); return y+'-'+m+'-'+d;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const hoy = new Date().toISOString().split('T')[0];
+  document.getElementById('f-fecha').value = hoy;
+  document.getElementById('f-filt').value = hoy;
+  initTags();
+  loadCat();
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.rel') && !e.target.closest('.tags-box'))
+      document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
+  });
+});
+
+function goTab(t) {
+  ['reg','list','gest'].forEach(n => {
+    document.getElementById('sec-'+n).classList.remove('active');
+    document.getElementById('tab-'+n).classList.remove('active');
+  });
+  document.getElementById('sec-'+t).classList.add('active');
+  document.getElementById('tab-'+t).classList.add('active');
+}
+
+async function loadCat() {
+  try {
+    const r = await fetch(WH.catList, {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'});
+    const d = await r.json();
+    cat = Array.isArray(d) ? d : [];
+  } catch(e) { cat = []; }
+  renderCat();
+}
+
+function showEmpDrop(val) {
+  const dd = document.getElementById('dd-emp');
+  const list = [...new Set(cat.map(c => c.Empresa))].filter(e => e && e.toLowerCase().includes(val.toLowerCase()));
+  if (!list.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = list.map(e => '<div class="ditem" onmousedown="pickEmp(\'' + e.replace(/\'/g,\"\\'") + \'')">'+ e +'</div>').join('');
+  dd.style.display = 'block';
+}
+function pickEmp(e) {
+  document.getElementById('f-emp').value = e;
+  document.getElementById('dd-emp').style.display = 'none';
+  showOpDrop('', e);
+}
+
+function initTags() {
+  const inp = document.getElementById('tag-inp');
+  inp.addEventListener('keydown', e => {
+    if ((e.key==='Enter'||e.key===',') && inp.value.trim()) {
+      e.preventDefault();
+      addChip(inp.value.replace(',','').trim());
+      inp.value = '';
+      document.getElementById('dd-op').style.display = 'none';
+    } else if (e.key==='Backspace' && !inp.value && chips.length) {
+      removeChip(chips.length-1);
+    }
+  });
+  inp.addEventListener('input', () => showOpDrop(inp.value, document.getElementById('f-emp').value));
+  inp.addEventListener('focus', () => showOpDrop(inp.value, document.getElementById('f-emp').value));
+  inp.addEventListener('blur', () => setTimeout(() => {
+    if (inp.value.trim()) { addChip(inp.value.trim()); inp.value = ''; }
+    document.getElementById('dd-op').style.display = 'none';
+  }, 150));
+}
+
+function showOpDrop(val, emp) {
+  const dd = document.getElementById('dd-op');
+  const list = cat.filter(c => (!emp || c.Empresa===emp) && !chips.includes(c.Operario))
+    .map(c => c.Operario).filter((o,i,a) => a.indexOf(o)===i)
+    .filter(o => o && o.toLowerCase().includes(val.toLowerCase()));
+  if (!list.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = list.map(o => '<div class="ditem" onmousedown="pickOp(\'' + o.replace(/\'/g,\"\\'") + \'')">👤 '+ o +'</div>').join('');
+  dd.style.display = 'block';
+}
+function pickOp(o) {
+  addChip(o);
+  document.getElementById('tag-inp').value = '';
+  document.getElementById('dd-op').style.display = 'none';
+  setTimeout(() => showOpDrop('', document.getElementById('f-emp').value), 100);
+}
+function addChip(n) { if (!n || chips.includes(n)) return; chips.push(n); renderChips(); }
+function removeChip(i) { chips.splice(i,1); renderChips(); }
+function renderChips() {
+  const box = document.getElementById('tags-box');
+  const inp = document.getElementById('tag-inp');
+  box.innerHTML = '';
+  chips.forEach((c,i) => {
+    const el = document.createElement('div');
+    el.className = 'tchip';
+    el.innerHTML = c + ' <span class="del" onmousedown="removeChip('+i+')">×</span>';
+    box.appendChild(el);
+  });
+  box.appendChild(inp);
+}
+
+function setTipo(t) {
+  tipo = t;
+  document.getElementById('tb-c').className = 'tipo-btn' + (t==='c'?' active-c':'');
+  document.getElementById('tb-h').className = 'tipo-btn' + (t==='h'?' active-h':'');
+  document.getElementById('row-horas').style.display = t==='h'?'block':'none';
+}
+
+async function saveRow() {
+  const fecha = d2s(document.getElementById('f-fecha').value);
+  const emp   = document.getElementById('f-emp').value.trim();
+  const job   = document.getElementById('f-job').value.trim();
+  const hrs   = document.getElementById('f-hrs').value;
+  const note  = document.getElementById('f-note').value.trim();
+  const ti    = document.getElementById('tag-inp');
+  if (ti.value.trim()) { addChip(ti.value.trim()); ti.value = ''; }
+
+  if (!fecha)        { showAlert('⚠️ Fecha obligatoria','err','alert-r'); return; }
+  if (!emp)          { showAlert('⚠️ Empresa obligatoria','err','alert-r'); return; }
+  if (!chips.length) { showAlert('⚠️ Añade al menos un trabajador','err','alert-r'); return; }
+  if (!job)          { showAlert('⚠️ Describe el trabajo realizado','err','alert-r'); return; }
+  if (tipo==='h'&&!hrs) { showAlert('⚠️ Indica las horas trabajadas','err','alert-r'); return; }
+
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true; btn.textContent = 'GUARDANDO...';
+  try {
+    const r = await fetch(WH.save, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        Fecha:fecha, Empresa:emp, Trabajadores:chips.join(', '),
+        'Trabajo Realizado':job,
+        'Tipo (Contrato/Hora)':tipo==='c'?'Contrato':'Hora',
+        Horas:tipo==='h'?parseFloat(hrs):'', Notas:note
+      })
+    });
+    if (r.ok) { showAlert('✅ Registrado — '+emp+' · '+chips.join(', '),'ok','alert-r'); clearForm(); }
+    else throw new Error();
+  } catch(e) { showAlert('❌ Error de conexión — verifica n8n','err','alert-r'); }
+  btn.disabled = false; btn.textContent = 'GUARDAR';
+}
+
+function clearForm() {
+  selRow = null;
+  document.getElementById('btn-del').style.display = 'none';
+  ['f-emp','f-job','f-hrs','f-note'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-fecha').value = new Date().toISOString().split('T')[0];
+  chips = []; renderChips(); setTipo('c');
+}
+
+function showAlert(msg, tipo, id) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.className = 'alert '+tipo;
+  setTimeout(() => { el.className = 'alert'; }, 5000);
+}
+
+async function delRow() {
+  if (!selRow) return;
+  if (!confirm('⚠️ Eliminar el registro de '+selRow.Empresa+' del '+selRow.Fecha+'?\n\nEsta acción no se puede deshacer.')) return;
+  const btn = document.getElementById('btn-del');
+  btn.textContent = 'ELIMINANDO...';
+  try {
+    const r = await fetch(WH.del, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({Fecha:selRow.Fecha, Empresa:selRow.Empresa, Trabajadores:selRow.Trabajadores})
+    });
+    if (r.ok) { showAlert('✅ Registro eliminado','ok','alert-r'); selRow=null; clearForm(); }
+    else showAlert('❌ Error al eliminar','err','alert-r');
+  } catch(e) { showAlert('❌ Error de conexión','err','alert-r'); }
+  btn.textContent = '🗑 ELIMINAR ESTE REGISTRO';
+}
+
+function fillForm(row) {
+  selRow = row;
+  document.getElementById('f-fecha').value = s2d(row.Fecha);
+  document.getElementById('f-emp').value   = row.Empresa||'';
+  document.getElementById('f-job').value   = row['Trabajo Realizado']||'';
+  document.getElementById('f-note').value  = row.Notas||'';
+  chips = row.Trabajadores ? row.Trabajadores.split(',').map(s=>s.trim()).filter(Boolean) : [];
+  renderChips();
+  const t = (row['Tipo (Contrato/Hora)']||'').toLowerCase().includes('hora')?'h':'c';
+  setTipo(t);
+  if (t==='h') document.getElementById('f-hrs').value = row.Horas||'';
+  document.getElementById('btn-del').style.display = 'block';
+  goTab('reg');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function filtroHoy() {
+  showAll = false;
+  document.getElementById('fb-hoy').classList.add('active');
+  document.getElementById('fb-all').classList.remove('active');
+  document.getElementById('f-filt').value = new Date().toISOString().split('T')[0];
+  loadList();
+}
+function filtroAll() {
+  showAll = true;
+  document.getElementById('fb-all').classList.add('active');
+  document.getElementById('fb-hoy').classList.remove('active');
+  loadList();
+}
+function onFiltroChange() {
+  showAll = false;
+  document.getElementById('fb-hoy').classList.remove('active');
+  document.getElementById('fb-all').classList.remove('active');
+  loadList();
+}
+
+async function loadList() {
+  const wrap = document.getElementById('rlist');
+  wrap.innerHTML = '<div class="loading">Cargando...</div>';
+  const fecha = showAll ? '' : d2s(document.getElementById('f-filt').value);
+  try {
+    const r = await fetch(WH.list, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({fecha})
+    });
+    const data = await r.json();
+    renderList(Array.isArray(data) ? data : []);
+  } catch(e) {
+    wrap.innerHTML = '<div class="empty">⚠️ No se puede conectar con n8n<br>Verifica que el webhook esté activo</div>';
+  }
+}
+
+function renderList(rows) {
+  const wrap = document.getElementById('rlist');
+  if (!rows.length) { wrap.innerHTML = '<div class="empty">Sin registros para esta fecha</div>'; return; }
+  wrap.innerHTML = '';
+  rows.forEach(row => {
+    const t = (row['Tipo (Contrato/Hora)']||'').toLowerCase().includes('hora')?'h':'c';
+    const ops = row.Trabajadores ? row.Trabajadores.split(',').map(s=>s.trim()) : [];
+    const div = document.createElement('div');
+    div.className = 'rrow';
+    div.innerHTML =
+      '<div class="rrow-top"><div class="rrow-emp">'+( row.Empresa||'—')+'</div>'+
+      '<div class="rrow-fecha">'+( row.Fecha||'')+'</div></div>'+
+      '<div class="rrow-job">'+( row['Trabajo Realizado']||'—')+'</div>'+
+      '<div class="rrow-tags">'+
+        '<span class="rtag '+(t==='h'?'rtag-h':'rtag-c')+'">'+(t==='h'?'⏱ '+(row.Horas||'?')+'h':'✓ CONTRATO')+'</span>'+
+        ops.map(o=>'<span class="rtag rtag-o">👤 '+o+'</span>').join('')+
+      '</div>'+
+      (row.Notas?'<div class="rrow-note">📝 '+row.Notas+'</div>':''
+    );
+    div.addEventListener('click', () => fillForm(row));
+    wrap.appendChild(div);
+  });
+}
+
+function renderCat() {
+  const wrap = document.getElementById('cat-wrap');
+  const emps = [...new Set(cat.map(c=>c.Empresa))];
+  if (!emps.length) { wrap.innerHTML = '<div class="empty">No hay empresas. ¡Añade una!</div>'; return; }
+  wrap.innerHTML = '';
+  emps.forEach(emp => {
+    const ops = cat.filter(c=>c.Empresa===emp);
+    const uid = 'e'+Math.random().toString(36).slice(2,8);
+    const card = document.createElement('div');
+    card.className = 'emp-card';
+    card.innerHTML =
+      '<div class="emp-hdr"><div class="emp-name">'+emp+'</div><div class="emp-cnt">'+ops.length+' operario/s</div></div>'+
+      '<div class="emp-body">'+
+        ops.map(o =>
+          '<div class="op-chip">'+o.Operario+' <span class="op-del" data-emp="'+emp+'" data-op="'+o.Operario+'">×</span></div>'
+        ).join('')+
+        '<div class="add-row" style="width:100%">'+
+          '<input type="text" id="inp-'+uid+'" placeholder="Nuevo operario...">'+
+          '<button class="btn-add" data-uid="'+uid+'" data-emp="'+emp+'">+</button>'+
+        '</div>'+
+      '</div>';
+    card.querySelectorAll('.op-del').forEach(b => b.addEventListener('click', () => delOp(b.dataset.emp, b.dataset.op)));
+    card.querySelector('.btn-add').addEventListener('click', b => addOp(b.target.dataset.emp, b.target.dataset.uid));
+    card.querySelector('#inp-'+uid).addEventListener('keydown', e => { if (e.key==='Enter') addOp(emp, uid); });
+    wrap.appendChild(card);
+  });
+}
+
+async function addOp(emp, uid) {
+  const inp = document.getElementById('inp-'+uid);
+  const nome = inp.value.trim();
+  if (!nome) return;
+  try {
+    await fetch(WH.catSave, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({Empresa:emp, Operario:nome})});
+    cat.push({Empresa:emp, Operario:nome});
+    renderCat();
+    showAlertG('✅ '+nome+' añadido a '+emp, 'ok');
+  } catch(e) { showAlertG('❌ Error de conexión', 'err'); }
+}
+
+async function delOp(emp, op) {
+  if (!confirm('¿Eliminar '+op+' de '+emp+'?')) return;
+  try {
+    await fetch(WH.catDel, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({Empresa:emp, Operario:op})});
+    cat = cat.filter(c => !(c.Empresa===emp && c.Operario===op));
+    renderCat();
+    showAlertG('✅ '+op+' eliminado', 'ok');
+  } catch(e) { showAlertG('❌ Error', 'err'); }
+}
+
+function toggleNewEmp() {
+  const f = document.getElementById('new-emp-form');
+  f.style.display = f.style.display==='block'?'none':'block';
+}
+
+async function saveNewEmp() {
+  const nome = document.getElementById('new-emp-val').value.trim();
+  if (!nome) return;
+  const op = prompt('Primer operario de "'+nome+'" (obligatorio):');
+  if (!op) return;
+  try {
+    await fetch(WH.catSave, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({Empresa:nome, Operario:op})});
+    cat.push({Empresa:nome, Operario:op});
+    document.getElementById('new-emp-val').value = '';
+    document.getElementById('new-emp-form').style.display = 'none';
+    renderCat();
+    showAlertG('✅ Empresa "'+nome+'" añadida', 'ok');
+  } catch(e) { showAlertG('❌ Error de conexión', 'err'); }
+}
+
+function showAlertG(msg, t) {
+  const el = document.getElementById('alert-g');
+  el.textContent = msg; el.className = 'alert-g '+t;
+  setTimeout(() => { el.className = 'alert-g'; }, 5000);
+}
+</script>
+</body>
+</html>
