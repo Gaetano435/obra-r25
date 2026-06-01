@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OBRA R-25 — Diario</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root {
     --bg:#F0F2F5;--surface:#FFFFFF;--surface2:#E8ECF2;
@@ -325,8 +326,94 @@ const WH_CAT_LIST = N8N + '/catalogo-lista';
 const WH_CAT_SAVE = N8N + '/catalogo-save';
 const WH_CAT_DEL  = N8N + '/catalogo-eliminar';
 
-// ── NUOVO: webhook separato per le foto ──
-const WH_FOTO = N8N + '/diario-foto';
+// ── GOOGLE DRIVE OAUTH — upload diretto senza n8n ──
+const GDRIVE_CLIENT_ID = '188501122395-00nlegon07n41ha1kli789rqt46a45b0.apps.googleusercontent.com';
+const GDRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+const GDRIVE_FOLDER = 'Diario Obra R25';
+let gdriveToken = null;
+
+async function gdriveAutorizar() {
+  return new Promise((resolve, reject) => {
+    // Usa Google Identity Services (GIS)
+    if (gdriveToken) { resolve(gdriveToken); return; }
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: GDRIVE_CLIENT_ID,
+      scope: GDRIVE_SCOPE,
+      callback: (resp) => {
+        if (resp.error) { reject(resp.error); return; }
+        gdriveToken = resp.access_token;
+        resolve(gdriveToken);
+      }
+    });
+    client.requestAccessToken();
+  });
+}
+
+async function gdriveGetOCreaCartella(token, fechaStr) {
+  // Cerca o crea cartella principale "Diario Obra R25"
+  const cerca = await fetch(
+    `https://www.googleapis.com/drive/v3/files?q=name='${GDRIVE_FOLDER}' and mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id)`,
+    { headers: { Authorization: 'Bearer ' + token } }
+  );
+  const dati = await cerca.json();
+  let parentId;
+  if (dati.files && dati.files.length > 0) {
+    parentId = dati.files[0].id;
+  } else {
+    const crea = await fetch('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: GDRIVE_FOLDER, mimeType: 'application/vnd.google-apps.folder' })
+    });
+    const nuova = await crea.json();
+    parentId = nuova.id;
+  }
+  // Cerca o crea sottocartella per la data
+  const cerca2 = await fetch(
+    `https://www.googleapis.com/drive/v3/files?q=name='${fechaStr}' and mimeType='application/vnd.google-apps.folder' and '${parentId}' in parents and trashed=false&fields=files(id)`,
+    { headers: { Authorization: 'Bearer ' + token } }
+  );
+  const dati2 = await cerca2.json();
+  if (dati2.files && dati2.files.length > 0) return dati2.files[0].id;
+  const crea2 = await fetch('https://www.googleapis.com/drive/v3/files', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: fechaStr, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] })
+  });
+  const nuova2 = await crea2.json();
+  return nuova2.id;
+}
+
+async function gdriveUploadFoto(token, folderId, base64, fileName) {
+  // Converti base64 in Blob
+  const byteChars = atob(base64);
+  const byteArr = new Uint8Array(byteChars.length);
+  for (let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
+  const blob = new Blob([byteArr], { type: 'image/jpeg' });
+
+  // Upload multipart su Drive
+  const metadata = JSON.stringify({ name: fileName, parents: [folderId] });
+  const form = new FormData();
+  form.append('metadata', new Blob([metadata], { type: 'application/json' }));
+  form.append('file', blob);
+
+  const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + token },
+    body: form
+  });
+  const data = await res.json();
+  if (!data.id) throw new Error('Upload fallito');
+
+  // Rendi pubblico
+  await fetch(`https://www.googleapis.com/drive/v3/files/${data.id}/permissions`, {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ role: 'reader', type: 'anyone' })
+  });
+
+  return `https://drive.google.com/uc?export=view&id=${data.id}`;
+}
 
 let tipoAttivo = 'contrato';
 let operaiList = [];
@@ -416,47 +503,39 @@ async function fotoSubir(fecha, empresa, trabajadores) {
   const el = document.getElementById('foto-status');
   const urls = ['', '', ''];
 
-  for (let i = 0; i < fotosASubir.length; i++) {
-    const foto = fotosASubir[i];
-    el.textContent = `⏳ Subiendo foto ${i + 1} de ${fotosASubir.length}...`;
+  try {
+    el.textContent = '🔐 Autorizzazione Google Drive...';
     el.className = 'foto-status uploading';
+    const token = await gdriveAutorizar();
 
-    try {
-      // Converte base64 in Blob e invia come FormData
-      const byteChars = atob(foto.base64);
-      const byteArr = new Uint8Array(byteChars.length);
-      for (let j = 0; j < byteChars.length; j++) byteArr[j] = byteChars.charCodeAt(j);
-      const blob = new Blob([byteArr], { type: 'image/jpeg' });
+    // Crea/trova cartella per la data
+    const fechaCartella = fecha.replace(/\//g, '-');
+    const folderId = await gdriveGetOCreaCartella(token, fechaCartella);
 
-      const formData = new FormData();
-      formData.append('foto', blob, `foto_${foto.slot}_${Date.now()}.jpg`);
-      formData.append('slot', foto.slot);
-      formData.append('fecha', fecha);
-      formData.append('empresa', empresa);
-      formData.append('trabajadores', trabajadores);
-
-      const res = await fetch(WH_FOTO, {
-        method: 'POST',
-        body: formData
-        // NON impostare Content-Type — FormData lo imposta automaticamente con boundary
-      });
-
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-      const url = data.url || (data.urls && data.urls[foto.slot - 1]) || '';
-      urls[foto.slot - 1] = url;
-
-    } catch (e) {
-      console.error('Error foto slot ' + foto.slot + ':', e);
+    for (let i = 0; i < fotosASubir.length; i++) {
+      const foto = fotosASubir[i];
+      el.textContent = `⏳ Subiendo foto ${i + 1} de ${fotosASubir.length}...`;
+      el.className = 'foto-status uploading';
+      try {
+        const fileName = `foto_${foto.slot}_${Date.now()}.jpg`;
+        const url = await gdriveUploadFoto(token, folderId, foto.base64, fileName);
+        urls[foto.slot - 1] = url;
+      } catch (e) {
+        console.error('Error foto slot ' + foto.slot + ':', e);
+      }
     }
-  }
 
-  const subite = urls.filter(u => u).length;
-  if (subite > 0) {
-    el.textContent = `✅ ${subite} foto${subite > 1 ? 's' : ''} guardada${subite > 1 ? 's' : ''} en Drive`;
-    el.className = 'foto-status done';
-  } else {
-    el.textContent = '⚠️ Fotos no subidas — registro guardado sin fotos';
+    const subite = urls.filter(u => u).length;
+    if (subite > 0) {
+      el.textContent = `✅ ${subite} foto${subite > 1 ? 's' : ''} guardada${subite > 1 ? 's' : ''} en Drive`;
+      el.className = 'foto-status done';
+    } else {
+      el.textContent = '⚠️ Fotos no subidas — registro guardado sin fotos';
+      el.className = 'foto-status err';
+    }
+  } catch (e) {
+    console.error('Error autorización:', e);
+    el.textContent = '⚠️ Error de autorización Google Drive';
     el.className = 'foto-status err';
   }
   return urls;
