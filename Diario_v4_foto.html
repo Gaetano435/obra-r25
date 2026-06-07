@@ -409,43 +409,52 @@ function fotoLimpiar() {
   document.getElementById('foto-status').className = 'foto-status';
 }
 
+// ── CLOUDINARY — upload diretto, nessun login richiesto ──
+const CLOUDINARY_CLOUD = 'f3iffr3z';
+const CLOUDINARY_PRESET = 'DiarioObra';
+const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD + '/image/upload';
+
 async function fotoSubir(fecha, empresa, trabajadores) {
   const fotosASubir = fotoDati.map((f, i) => f ? { slot: i + 1, ...f } : null).filter(Boolean);
   if (!fotosASubir.length) return ['', '', ''];
 
   const el = document.getElementById('foto-status');
-  el.textContent = '⏳ Subiendo fotos...';
-  el.className = 'foto-status uploading';
+  const urls = ['', '', ''];
 
-  try {
-    const res = await fetch(WH_FOTO, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fecha: fecha,
-        empresa: empresa,
-        trabajadores: trabajadores,
-        fotos: fotosASubir
-      })
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    const urls = data.urls || [];
-    const subite = urls.filter(u => u).length;
-    if (subite > 0) {
-      el.textContent = '✅ ' + subite + ' foto' + (subite > 1 ? 's' : '') + ' guardada' + (subite > 1 ? 's' : '') + ' en Drive';
-      el.className = 'foto-status done';
-    } else {
-      el.textContent = '⚠️ Fotos no subidas — registro guardado sin fotos';
-      el.className = 'foto-status err';
+  for (let i = 0; i < fotosASubir.length; i++) {
+    const foto = fotosASubir[i];
+    el.textContent = '⏳ Subiendo foto ' + (i + 1) + ' de ' + fotosASubir.length + '...';
+    el.className = 'foto-status uploading';
+
+    try {
+      const formData = new FormData();
+      formData.append('file', 'data:image/jpeg;base64,' + foto.base64);
+      formData.append('upload_preset', CLOUDINARY_PRESET);
+      formData.append('folder', 'DiarioObra/' + fecha.replace(/\//g, '-'));
+
+      const res = await fetch(CLOUDINARY_URL, {
+        method: 'POST',
+        body: formData
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      if (data.secure_url) {
+        urls[foto.slot - 1] = data.secure_url;
+      }
+    } catch (e) {
+      console.error('Error foto slot ' + foto.slot + ':', e);
     }
-    return [urls[0] || '', urls[1] || '', urls[2] || ''];
-  } catch (e) {
-    console.error('Error foto:', e);
+  }
+
+  const subite = urls.filter(u => u).length;
+  if (subite > 0) {
+    el.textContent = '✅ ' + subite + ' foto' + (subite > 1 ? 's' : '') + ' guardada' + (subite > 1 ? 's' : '');
+    el.className = 'foto-status done';
+  } else {
     el.textContent = '⚠️ Fotos no subidas — registro guardado sin fotos';
     el.className = 'foto-status err';
-    return ['', '', ''];
   }
+  return urls;
 }
 // ══════════════════════════════════════════════════
 
