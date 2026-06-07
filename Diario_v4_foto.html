@@ -342,15 +342,20 @@ let catalogo = [];
 // Non interagisce con nessuna funzione esistente
 // ══════════════════════════════════════════════════
 let fotoDati = [null, null, null]; // base64 per ogni slot
+let fotoCaricando = false; // true mentre una foto è in elaborazione
 
 function fotoSeleccionada(idx, input) {
   const file = input.files[0];
   if (!file) return;
 
   // Comprimi e converti in base64
+  fotoCaricando = true;
+  document.getElementById('btn-save').disabled = true;
+  document.getElementById('foto-status').textContent = '⏳ Procesando foto...';
+  document.getElementById('foto-status').className = 'foto-status uploading';
+
   const reader = new FileReader();
   reader.onload = (e) => {
-    // Comprimi via canvas per non appesantire il payload
     const img = new Image();
     img.onload = () => {
       const MAX = 1200;
@@ -370,6 +375,8 @@ function fotoSeleccionada(idx, input) {
       document.getElementById('foto-preview-' + idx).classList.add('visible');
       document.getElementById('foto-remove-' + idx).classList.add('visible');
       document.getElementById('foto-slot-' + idx).classList.add('has-foto');
+      fotoCaricando = false;
+      document.getElementById('btn-save').disabled = false;
       fotoAggiornareStatus();
     };
     img.src = e.target.result;
@@ -410,6 +417,7 @@ function fotoLimpiar() {
   });
   document.getElementById('foto-status').textContent = '';
   document.getElementById('foto-status').className = 'foto-status';
+  fotoCaricando = false;
 }
 
 // ── FOTO via n8n → Cloudinary ──
@@ -616,6 +624,12 @@ async function guardar() {
   if(!operaiList.length){notif('⚠️ Añade al menos un trabajador','err');return;}
   if(!trabajo){notif('⚠️ Describe el trabajo realizado','err');return;}
   if(tipoAttivo==='hora'&&!horas){notif('⚠️ Indica las horas trabajadas','err');return;}
+
+  // Aspetta se una foto è ancora in elaborazione
+  if (fotoCaricando) {
+    notif('⏳ Espera — foto aún procesándose...', 'err');
+    return;
+  }
 
   const btn=document.getElementById('btn-save');
   btn.disabled=true; btn.textContent='GUARDANDO...';
