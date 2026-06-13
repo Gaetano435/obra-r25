@@ -368,10 +368,33 @@ function fotoSeleccionada(idx, input) {
   document.getElementById('foto-status').textContent = '⏳ Procesando foto...';
   document.getElementById('foto-status').className = 'foto-status uploading';
 
+  // Timeout sicurezza — sblocca GUARDAR dopo 10 secondi in ogni caso
+  const timeoutSicurezza = setTimeout(() => {
+    fotoCaricando = false;
+    document.getElementById('btn-save').disabled = false;
+    document.getElementById('foto-status').textContent = '';
+    document.getElementById('foto-status').className = 'foto-status';
+  }, 10000);
+
   const reader = new FileReader();
+  reader.onerror = () => {
+    clearTimeout(timeoutSicurezza);
+    fotoCaricando = false;
+    document.getElementById('btn-save').disabled = false;
+    document.getElementById('foto-status').textContent = '⚠️ Error al leer la foto';
+    document.getElementById('foto-status').className = 'foto-status err';
+  };
   reader.onload = (e) => {
     const img = new Image();
+    img.onerror = () => {
+      clearTimeout(timeoutSicurezza);
+      fotoCaricando = false;
+      document.getElementById('btn-save').disabled = false;
+      document.getElementById('foto-status').textContent = '⚠️ Formato no soportado';
+      document.getElementById('foto-status').className = 'foto-status err';
+    };
     img.onload = () => {
+      clearTimeout(timeoutSicurezza);
       const MAX = 1200;
       let w = img.width, h = img.height;
       if (w > MAX || h > MAX) {
@@ -384,7 +407,6 @@ function fotoSeleccionada(idx, input) {
       const b64 = canvas.toDataURL('image/jpeg', 0.75).split(',')[1];
       fotoDati[idx] = { base64: b64, nombre: file.name, tipo: 'image/jpeg' };
 
-      // Mostra anteprima
       document.getElementById('foto-preview-' + idx).src = 'data:image/jpeg;base64,' + b64;
       document.getElementById('foto-preview-' + idx).classList.add('visible');
       document.getElementById('foto-remove-' + idx).classList.add('visible');
